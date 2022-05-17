@@ -1,0 +1,36 @@
+.game{
+  @apply relative sm:max-w-md sm:mx-auto py-2 px-4 min-h-screen overflow-y-scroll;
+}
+
+.progresBar{
+  @apply flex items-center justify-between text-gray2;
+}
+.progresBar div {
+  @apply bg-gray2 h-[15px] w-full rounded-full mx-2 relative overflow-hidden;
+}
+.progresBar div section {
+  @apply top-0 bg-primary3 right-0 h-full;
+}
+.progresBar section {
+  @apply tracking-tighter text-sm font-thin text-gray;
+}
+
+.answerCalc {
+  @apply border-[2px] cursor-pointer mb-2 overflow-hidden rounded-xl relative text-center py-1;
+}
+.answerCalc::before {
+  @apply absolute h-[2px] w-full bottom-0 left-0; 
+}
+.answerCalcInfo {
+  @apply border-info2 text-info3 bg-info before:bg-info2;
+}
+.answerCalcGray {
+  @apply border-gray text-gray bg-gray2 before:bg-gray;
+}
+
+.checkStatus {
+  @apply absolute bottom-0 left-0 w-full h-40 p-4;
+}
+.checkStatus article section {
+  @apply bg-white w-14 h-14 flex mr-2 items-center justify-center rounded-full;
+}
