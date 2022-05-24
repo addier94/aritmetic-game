@@ -1,0 +1,11 @@
+gamingState = {
+  progress: number
+  endProgress: number
+  initialNum: number
+  secondNum: number
+  result: number
+
+  isAnswerCorrect: boolean
+};
+
+
