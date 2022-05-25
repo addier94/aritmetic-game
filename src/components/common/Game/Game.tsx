@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, {Dispatch, SetStateAction, useContext, useState} from 'react';
 import {GiCheckMark} from 'react-icons/gi';
 import {MdClose} from 'react-icons/md';
 import {VscChromeClose} from 'react-icons/vsc';
@@ -16,6 +16,7 @@ const Game = () => {
         isSuccessOrError &&
       <CheckStatus msg={{title: 'Bien hecho', result: '23', resultStatus: true}}/>
       }
+      <Btn />
     </div>
   );
 };
@@ -37,31 +38,46 @@ const ProgressBar = () => {
 };
 
 const GameBody = () => {
+  const [currentNum, setCurrentNum] = useState<number | undefined>(undefined);
+
   const {multiplication} = useContext(PlayerContext);
   const {initNum, result, secondNum} = multiplication;
+
+  const setNum = (num:number) => {
+    setCurrentNum(num);
+    if ((initNum * secondNum) === num) { // Answer of Multiplication is correct
+
+    }
+  };
+
+
   return (
     <div className='mt-10 text-gray font-bold text-4xl'>
       <p className='mb-8'>
         <span className='text-info2'>{`${initNum}x${secondNum}`}</span>
         <span className='mx-2'>=</span>
-        <span className='text-primary3 border-b-[1px]'>{result}</span>
+        <span className='text-primary3 border-b-[1px]'>{currentNum}</span>
       </p>
-      <AnswerCalc />
-      <AnswerCalc />
-      <AnswerCalc />
-      <AnswerCalc />
-      <AnswerCalc />
-      <AnswerCalc />
-      <AnswerCalc />
+      {
+        generatePossibleSolutions(initNum, secondNum).map((item, i) => (
+          <AnswerCalc key={i} result={item} currentNum={currentNum} setNum={setNum} />
+        ))
+      }
     </div>
   );
 };
 
-const AnswerCalc = () => {
-  const [selected, setSelected] = useState(false);
+interface AnswerCalcProps {
+  result: number
+  currentNum: number | undefined
+  setNum: (num:number) => void
+}
+const AnswerCalc:React.FC<AnswerCalcProps> = ({result, currentNum, setNum}) => {
   return (
-    <div onClick={()=>setSelected(!selected)} className={`${selected ? s.answerCalcInfo : s.answerCalcGray} ${s.answerCalc}`}>
-      23
+    <div
+      onClick={()=>setNum(result)}
+      className={`${ result === currentNum ? s.answerCalcInfo : s.answerCalcGray} ${s.answerCalc}`}>
+      {result.toString()}
     </div>
   );
 };
@@ -102,3 +118,28 @@ const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
   );
 };
 
+const Btn = () => {
+  return (
+    <button className={`bg-primary text-primary2 mt-4 border-b-[6px] w-full hover:opacity-90 duration-150 rounded-lg py-3`}>CONTINUAR</button>
+  );
+};
+
+
+const generatePossibleSolutions = (init:number, end:number):number[] => {
+  const initArr:number[] = [];
+  const endArr:number[] = [];
+  const result:number[] = [];
+
+  initArr.push(init-1, init, init+1);
+  endArr.push(end-1, end+1);
+
+  for (const item of initArr) {
+    result.push(item * end);
+  }
+
+  for (const item of endArr) {
+    result.push(item * init);
+  }
+
+  return result;
+};
