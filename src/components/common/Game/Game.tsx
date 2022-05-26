@@ -1,4 +1,4 @@
-import React, {Dispatch, SetStateAction, useContext, useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {GiCheckMark} from 'react-icons/gi';
 import {MdClose} from 'react-icons/md';
 import {VscChromeClose} from 'react-icons/vsc';
@@ -16,7 +16,7 @@ const Game = () => {
         isSuccessOrError &&
       <CheckStatus msg={{title: 'Bien hecho', result: '23', resultStatus: true}}/>
       }
-      <Btn />
+      <FooterBtn />
     </div>
   );
 };
@@ -118,9 +118,19 @@ const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
   );
 };
 
-const Btn = () => {
+const FooterBtn = () => {
+  const [test, setTest] = useState(false);
+
   return (
-    <button className={`bg-primary text-primary2 mt-4 border-b-[6px] w-full hover:opacity-90 duration-150 rounded-lg py-3`}>CONTINUAR</button>
+    <div className='flex mt-12'>
+      <button
+        className={`border-2 text-gray2 mr-6 border-b-[6px] w-full hover:opacity-90 duration-150 rounded-3xl py-2 hover:bg-gray2 hover:text-gray font-bold`}
+      >SALTAR</button>
+
+      <button
+        className={`${test ? 'bg-primary2 border-primary3 text-white' : 'bg-gray3 border-gray3 text-gray2 cursor-not-allowed border-none py-[19px]'} border-b-[6px] w-full hover:opacity-90 duration-150 rounded-3xl font-bold py-4`}
+      >CONTINUAR</button>
+    </div>
   );
 };
 

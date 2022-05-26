@@ -1,6 +1,6 @@
 module.exports = {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
+    './src/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
     extend: {
@@ -15,9 +15,10 @@ module.exports = {
         'info2': '#84d8ff',
         'info3': '#1899d6',
         'gray': '#3c3c3c',
-        'gray2': '#e5e5e5'
-      }
+        'gray2': '#afafaf',
+        'gray3': '#e5e5e5',
+      },
     },
   },
   plugins: [],
-}
+};

@@ -6,7 +6,7 @@
   @apply flex items-center justify-between text-gray2;
 }
 .progresBar div {
-  @apply bg-gray2 h-[15px] w-full rounded-full mx-2 relative overflow-hidden;
+  @apply bg-gray3 h-[15px] w-full rounded-full mx-2 relative overflow-hidden;
 }
 .progresBar div section {
   @apply top-0 bg-primary3 right-0 h-full;
@@ -25,7 +25,7 @@
   @apply border-info2 text-info3 bg-info before:bg-info2;
 }
 .answerCalcGray {
-  @apply border-gray text-gray bg-gray2 before:bg-gray;
+  @apply border-gray2 text-gray2 bg-gray3 before:bg-gray2;
 }
 
 .checkStatus {
