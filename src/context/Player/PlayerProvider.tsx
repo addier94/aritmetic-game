@@ -1,13 +1,10 @@
-import React, {FC, useEffect, useReducer} from 'react';
+import React, {FC, useReducer} from 'react';
 
 import {PlayerContext, playerReducer} from '.';
-import {random} from '../../utils';
 
-type Progress = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10
-
-interface IProgress {
-  prog: Progress,
-  endProg: number
+export interface IProgress {
+  prog: number,
+  endProg?: number
 }
 
 export interface IMultiplication {
@@ -15,41 +12,55 @@ export interface IMultiplication {
   secondNum: number
   result: number
 }
+export interface ISuccessOrError {
+  title: string,
+  result: string,
+  resultStatus: 'success' | 'error' | 'empty'
+}
 
 export interface PlayerState {
   progress: IProgress
-  isSuccessOrError?: boolean
+  isSuccessOrError: ISuccessOrError
   multiplication: IMultiplication
+  result: number
 }
 
 const PLAYER_INITIAL_STATE: PlayerState = {
   progress: {prog: 0, endProg: 10},
-  isSuccessOrError: undefined,
+  isSuccessOrError: {title: '', result: '', resultStatus: 'empty'},
   multiplication: {} as IMultiplication,
+  result: 0,
 };
 
 export const PlayerProvider:FC<{children: React.ReactNode}> = ({children}) => {
   const [state, dispatch] = useReducer(playerReducer, PLAYER_INITIAL_STATE);
+  console.log(state);
+  const setNewChallenge = (multi:IMultiplication) => {
+    dispatch({type: '[Player] - Set Random Multiplication', payload: multi});
+  };
 
-  // const setGame = (game:IMultiplication) => {
-  //   dispatch({type: '[Player] - Set New Challenge', payload: game});
-  // };
+  const setResult = (result:number) => {
+    dispatch({type: '[Player] - Set Result', payload: result});
+  };
 
-  useEffect(() => {
-    dispatch({type: '[Player] - Set Random Multiplication',
-      payload: {
-        initNum: random.randomIntFromInterval(2, 9),
-        secondNum: random.randomIntFromInterval(2, 10),
-        result: 0,
-      },
-    });
-  }, []);
+  const increaseProgress = (progress: IProgress) => {
+    console.log(progress);
+    dispatch({type: '[Player] - Icrease Progress', payload: progress});
+  };
+
+  const successOrError = (state: ISuccessOrError) => {
+    dispatch({type: '[Player] - Set Success Or Error', payload: state});
+  };
 
   return (
     <PlayerContext.Provider value={{
       ...state,
 
       // methods
+      setNewChallenge,
+      setResult,
+      increaseProgress,
+      successOrError,
     }}>
       {children}
     </PlayerContext.Provider>
