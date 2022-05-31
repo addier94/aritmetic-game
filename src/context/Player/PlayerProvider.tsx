@@ -34,7 +34,6 @@ const PLAYER_INITIAL_STATE: PlayerState = {
 
 export const PlayerProvider:FC<{children: React.ReactNode}> = ({children}) => {
   const [state, dispatch] = useReducer(playerReducer, PLAYER_INITIAL_STATE);
-  console.log(state);
   const setNewChallenge = (multi:IMultiplication) => {
     dispatch({type: '[Player] - Set Random Multiplication', payload: multi});
   };
@@ -44,7 +43,6 @@ export const PlayerProvider:FC<{children: React.ReactNode}> = ({children}) => {
   };
 
   const increaseProgress = (progress: IProgress) => {
-    console.log(progress);
     dispatch({type: '[Player] - Icrease Progress', payload: progress});
   };
 

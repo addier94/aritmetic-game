@@ -1,12 +1,17 @@
 import React from 'react';
-import {Game} from './components/common';
+import {Route, Routes} from 'react-router-dom';
 import {PlayerProvider} from './context/Player';
+import Home from './pages/Home';
+import Player from './pages/Player';
 
 function App() {
   return (
     <div className="App">
       <PlayerProvider>
-        <Game />
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='player' element={<Player />} />
+        </Routes>
       </PlayerProvider>
     </div>
   );

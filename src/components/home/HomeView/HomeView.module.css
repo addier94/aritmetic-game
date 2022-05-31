@@ -1,0 +1,21 @@
+.homeView {
+  @apply bg-primary h-screen;
+}
+.homeView header section:first-child {
+  @apply bg-gray w-12 h-12 relative border-zinc-700 rounded-full flex items-center justify-center text-white font-bold shadow-inner;
+}
+.homeView header section:first-child::before {
+  content: '';
+  @apply absolute rounded-full inset-0 border-[7px] border-gray3 z-50;
+}
+
+.homeView header section:first-child::after {
+  content: '';
+  @apply absolute rounded-full inset-0 border-[2px] border-gray2 z-50;
+}
+
+.homeView header section article{
+  @apply w-20 h-[14px] font-medium text-center text-xs text-white relative;
+  background: rgba(0,0,0,0.4);
+  text-shadow: 0px 1px 2px #000;
+}
