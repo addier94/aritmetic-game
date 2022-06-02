@@ -1,5 +1,5 @@
 .homeView {
-  @apply bg-primary h-screen;
+  @apply sm:max-w-md sm:mx-auto py-2 px-4 h-screen;
 }
 .homeView header section:first-child {
   @apply bg-gray w-12 h-12 relative border-zinc-700 rounded-full flex items-center justify-center text-white font-bold shadow-inner;
