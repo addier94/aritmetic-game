@@ -10,7 +10,7 @@ function App() {
       <PlayerProvider>
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='player' element={<Player />} />
+          <Route path='player/:op' element={<Player />} />
         </Routes>
       </PlayerProvider>
     </div>

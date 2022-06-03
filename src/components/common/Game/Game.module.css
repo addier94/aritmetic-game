@@ -16,7 +16,7 @@
 }
 
 .answerCalc {
-  @apply border-[2px] cursor-pointer mb-2 overflow-hidden rounded-xl relative text-center py-1;
+  @apply border-[2px] cursor-pointer mb-2 overflow-hidden rounded-xl relative text-center py-1 text-3xl;
 }
 .answerCalc::before {
   @apply absolute h-[2px] w-full bottom-0 left-0; 

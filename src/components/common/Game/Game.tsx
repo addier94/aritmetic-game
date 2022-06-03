@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {FC, useContext, useEffect} from 'react';
 import {GiCheckMark} from 'react-icons/gi';
 import {MdClose} from 'react-icons/md';
 import {VscChromeClose} from 'react-icons/vsc';
@@ -6,9 +6,22 @@ import s from './Game.module.css';
 import {PlayerContext} from '../../../context/Player/PlayerContext';
 import {random} from '../../../utils';
 import {IMultiplication} from '../../../context/Player/PlayerProvider';
+import {useNavigate, useParams} from 'react-router-dom';
+import {TiEquals} from 'react-icons/ti';
+import {TiPlus} from 'react-icons/ti';
+import {TiMinus} from 'react-icons/ti';
 
 const Game = () => {
+  const navigate = useNavigate();
   const {isSuccessOrError: {result, resultStatus, title}} = useContext(PlayerContext);
+
+  const {op='anything'} = useParams();
+
+  useEffect(() => {
+    const allOp = ['sum', 'rest', 'multi'].includes(op);
+    if (!allOp) navigate('/');
+  }, []);
+
   let isSuccess:boolean = false;
   if (resultStatus === 'success') {
     isSuccess = true;
@@ -18,12 +31,12 @@ const Game = () => {
   return (
     <div className={s.game}>
       <ProgressBar />
-      <GameBody />
+      <GameBody op={op} />
       {
         resultStatus !== 'empty' &&
-      <CheckStatus msg={{title, result, resultStatus: isSuccess}}/>
+      <CheckStatus msg={{title, result, resultStatus: isSuccess, op}}/>
       }
-      <FooterBtn />
+      <FooterBtn op={op} />
     </div>
   );
 };
@@ -31,11 +44,14 @@ const Game = () => {
 export default Game;
 
 const ProgressBar = () => {
+  const navigate = useNavigate();
   const {progress} = useContext(PlayerContext);
   const {endProg, prog} = progress;
   return (
     <div className={s.progresBar}>
-      <VscChromeClose className='w-8 h-8 cursor-pointer duration-300 hover:text-gray' />
+      <VscChromeClose
+        onClick={() => navigate('/')}
+        className='w-8 h-8 cursor-pointer duration-300 hover:text-gray' />
       <div>
         <section style={{width: `${prog}0%`}}></section>
       </div>
@@ -44,7 +60,7 @@ const ProgressBar = () => {
   );
 };
 
-const GameBody = () => {
+const GameBody:FC<{op:string}> = ({op}) => {
   const {multiplication, result, setResult, setNewChallenge} = useContext(PlayerContext);
   const {initNum, secondNum} = multiplication;
 
@@ -53,18 +69,22 @@ const GameBody = () => {
   };
 
   useEffect(() => {
-    setNewChallenge(newChallenge());
+    setNewChallenge(newChallenge(op));
   }, []);
 
   return (
-    <div className='mt-10 text-gray font-bold text-4xl'>
-      <p className='mb-8'>
-        <span className='text-info2'>{`${initNum}x${secondNum}`}</span>
-        <span className='mx-2'>=</span>
+    <div className='mt-10 text-gray font-bold'>
+      <p className='mb-8 text-7xl flex justify-center'>
+        <span className='text-info2'>{initNum}</span>
+        {op === 'multi' && <TiPlus className='rotate-45' />}
+        {op === 'rest' && <TiMinus />}
+        {op === 'sum' && <TiPlus />}
+        <span className='text-info2'>{secondNum}</span>
+        <TiEquals />
         <span className='text-primary3 border-b-[1px]'>{result}</span>
       </p>
       {
-        generatePossibleSolutions(initNum, secondNum).map((item, i) => (
+        generatePossibleSolutions(initNum, secondNum, op).map((item, i) => (
           <AnswerCalc key={i} current={item} result={result} setNum={setNum} />
         ))
       }
@@ -88,7 +108,7 @@ const AnswerCalc:React.FC<AnswerCalcProps> = ({current, result, setNum}) => {
 };
 
 interface CheckStatusProps {
-  msg: {title: string, result: string, resultStatus: boolean},
+  msg: {title: string, result: string, resultStatus: boolean, op:string},
 }
 
 const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
@@ -96,7 +116,7 @@ const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
 
   const nextChallenge = () => {
     successOrError({resultStatus: 'empty', result: '', title: ''});
-    setNewChallenge(newChallenge());
+    setNewChallenge(newChallenge(msg.op));
     setResult(0);
   };
   const isSuccess = (type:string = 'banner') => {
@@ -132,14 +152,14 @@ const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
   );
 };
 
-const FooterBtn = () => {
+const FooterBtn:FC<{op:string}> = ({op}) => {
   const {setNewChallenge, multiplication, result, progress, successOrError, increaseProgress, setResult} = useContext(PlayerContext);
 
   const {initNum, secondNum} = multiplication;
   const {prog} = progress;
 
   const otherChallenge = () => {
-    setNewChallenge(newChallenge());
+    setNewChallenge(newChallenge(op));
     setResult(0);
   };
 
@@ -173,8 +193,18 @@ const FooterBtn = () => {
   );
 };
 
+const calculateMult = (result:number, initNum:number, secondNum:number) => {
 
-const generatePossibleSolutions = (init:number, end:number):number[] => {
+};
+
+
+const generatePossibleSolutions = (init:number, end:number, op:string):number[] => {
+  if (op === 'multi') return possibleAnswersMulti(init, end);
+  if (op === 'sum') return possibleAnswersSum(init, end);
+  return possibleAnswersRest(init, end);
+};
+
+const possibleAnswersMulti = (init:number, end:number):number[] => {
   const initArr:number[] = [];
   const endArr:number[] = [];
   const result:number[] = [];
@@ -189,15 +219,55 @@ const generatePossibleSolutions = (init:number, end:number):number[] => {
   for (const item of endArr) {
     result.push(item * init);
   }
+  return result;
+};
+const possibleAnswersSum = (init:number, end:number):number[] => {
+  const result:number[] = [];
+
+  const sum = init + end;
+  result.push(sum, sum+1, sum+2, sum-1, sum-2);
+  return result;
+};
+
+const possibleAnswersRest = (init:number, end:number):number[] => {
+  const result:number[] = [];
+
+  const rest = init - end;
+  result.push(rest, rest+1, rest+2, rest-1, rest-2);
 
   return result;
 };
 
 
-const newChallenge = ():IMultiplication => {
+const newChallenge = (op:string):IMultiplication => {
+  if (op === 'multi') return generateNewMulti();
+  if (op === 'sum') return generateNewSum();
+  return generateNewRest();
+};
+
+const generateNewMulti = () => {
   return {
     initNum: random.randomIntFromInterval(2, 9),
     secondNum: random.randomIntFromInterval(2, 10),
+    result: 0,
+  };
+};
+
+const generateNewRest = () => {
+  const initNum = random.randomIntFromInterval(3, 19);
+  let secondNum = random.randomIntFromInterval(3, 19);
+
+  do {
+    secondNum -=2;
+  }
+  while (secondNum >= initNum);
+
+  return {initNum, secondNum, result: 0};
+};
+const generateNewSum = () => {
+  return {
+    initNum: random.randomIntFromInterval(2, 20),
+    secondNum: random.randomIntFromInterval(2, 20),
     result: 0,
   };
 };

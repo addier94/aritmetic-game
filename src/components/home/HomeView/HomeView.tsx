@@ -2,6 +2,7 @@ import React, {FC, ReactNode} from 'react';
 import s from './HomeView.module.css';
 import {FaCoins, FaBitcoin} from 'react-icons/fa';
 import {GiWoodBeam} from 'react-icons/gi';
+import {useNavigate} from 'react-router-dom';
 
 const HomeView:React.FC = () => {
   return (
@@ -29,9 +30,9 @@ const HomeView:React.FC = () => {
       <Logout />
       {/* <FormLogin /> */}
       <section className='mt-8'>
-        <NavBtn >+</NavBtn>
-        <NavBtn >-</NavBtn>
-        <NavBtn >x</NavBtn>
+        <NavBtn goTo='/player/sum'>+</NavBtn>
+        <NavBtn goTo='/player/rest'>-</NavBtn>
+        <NavBtn goTo='/player/multi'>x</NavBtn>
       </section>
     </div>
   );
@@ -55,9 +56,15 @@ const ProgressBars:FC<ProgressBarsProps> = ({progress}) => {
   );
 };
 
-const NavBtn:React.FC<{children: ReactNode}> = ({children}) => {
+interface NavBtnProps {
+  children: ReactNode
+  goTo: string
+}
+const NavBtn:FC<NavBtnProps> = ({children, goTo}) => {
+  const navigate = useNavigate();
   return (
     <button
+      onClick={() => navigate(goTo)}
       className={`bg-primary2 mt-2 col-span-4 border-primary3 px-4 text-white border-b-[6px] w-full hover:opacity-90 duration-150 rounded-xl font-medium py-1 text-5xl pb-2`}>
       {children}
     </button>
