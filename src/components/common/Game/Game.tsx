@@ -1,4 +1,4 @@
-import React, {FC, useContext, useEffect} from 'react';
+import React, {FC, useContext, useEffect, useState} from 'react';
 import {GiCheckMark} from 'react-icons/gi';
 import {MdClose} from 'react-icons/md';
 import {VscChromeClose} from 'react-icons/vsc';
@@ -61,6 +61,7 @@ const ProgressBar = () => {
 };
 
 const GameBody:FC<{op:string}> = ({op}) => {
+  const [solutions, setSolutions] = useState<number[]>();
   const {multiplication, result, setResult, setNewChallenge} = useContext(PlayerContext);
   const {initNum, secondNum} = multiplication;
 
@@ -71,6 +72,11 @@ const GameBody:FC<{op:string}> = ({op}) => {
   useEffect(() => {
     setNewChallenge(newChallenge(op));
   }, []);
+  useEffect(() => {
+    if (initNum) {
+      setSolutions(generatePossibleSolutions(initNum, secondNum, op));
+    }
+  }, [initNum]);
 
   return (
     <div className='mt-10 text-gray font-bold'>
@@ -84,7 +90,8 @@ const GameBody:FC<{op:string}> = ({op}) => {
         <span className='text-primary3 border-b-[1px]'>{result}</span>
       </p>
       {
-        generatePossibleSolutions(initNum, secondNum, op).map((item, i) => (
+        solutions &&
+        solutions.map((item, i) => (
           <AnswerCalc key={i} current={item} result={result} setNum={setNum} />
         ))
       }
@@ -165,17 +172,18 @@ const FooterBtn:FC<{op:string}> = ({op}) => {
 
   const calculateMult = () => {
     if (result === 0 ) return;
-    if ((initNum * secondNum) === result) {
-      let progress = 0;
-      prog < 10 ? progress = prog + 1 : progress = prog;
-      increaseProgress({prog: progress, endProg: 10});
-      successOrError({title: 'Bien hecho', result: result.toString() + ' es correcto', resultStatus: 'success'});
-    } else {
-      successOrError(
-          {title: 'Error',
-            result: `El resultado era: ${(initNum * secondNum).toString()} `,
-            resultStatus: 'error'});
-    }
+
+    calculateAnswer(result, initNum, secondNum, prog, op)
+        .then((item) => {
+          increaseProgress({prog: item, endProg: 10});
+          successOrError({title: 'Bien hecho', result: result.toString() + ' es correcto', resultStatus: 'success'});
+        })
+        .catch((item) => {
+          successOrError(
+              {title: 'Error',
+                result: `El resultado era: ${answerItWas(initNum, secondNum, op).toString()} `,
+                resultStatus: 'error'});
+        });
   };
 
   return (
@@ -193,47 +201,75 @@ const FooterBtn:FC<{op:string}> = ({op}) => {
   );
 };
 
-const calculateMult = (result:number, initNum:number, secondNum:number) => {
-
+const answerItWas = (initNum:number, secondNum:number, op:string):number => {
+  let itWas:number = 0;
+  if (op === 'sum') itWas = initNum + secondNum;
+  if (op === 'rest') itWas = initNum - secondNum;
+  if (op === 'multi') itWas = initNum * secondNum;
+  return itWas;
 };
+
+const calculateAnswer = (result:number, initNum:number, secondNum:number, prog:number, op:string):Promise<number> => new Promise((resolve, reject) => {
+  let progress:number = 0;
+
+  if ( (initNum * secondNum) === result && op === 'multi') {
+    prog < 10 ? progress = prog + 1 : progress = prog;
+    resolve(progress);
+  }
+  if ( (initNum - secondNum) === result && op === 'rest') {
+    prog < 10 ? progress = prog + 1 : progress = prog;
+    resolve(progress);
+  }
+  if ((initNum + secondNum) === result && op === 'sum') {
+    prog < 10 ? progress = prog + 1 : progress = prog;
+    resolve(progress);
+  }
+  reject(progress);
+});
 
 
 const generatePossibleSolutions = (init:number, end:number, op:string):number[] => {
+  console.log(init, end, op);
   if (op === 'multi') return possibleAnswersMulti(init, end);
-  if (op === 'sum') return possibleAnswersSum(init, end);
-  return possibleAnswersRest(init, end);
+  if (op === 'sum') return answersSumOrRest(init, end, op);
+  return answersSumOrRest(init, end, op);
 };
 
 const possibleAnswersMulti = (init:number, end:number):number[] => {
-  const initArr:number[] = [];
-  const endArr:number[] = [];
+  const arr:number[] = [init * end, (init - 1) * end, (init + 1) * end, (end-1) * init, (end+1) * init];
+
   const result:number[] = [];
 
-  initArr.push(init-1, init, init+1);
-  endArr.push(end-1, end+1);
+  for (let i = 0; i<5; i++) {
+    const numRandom = random.randomIntFromInterval(0, (arr.length - 1));
 
-  for (const item of initArr) {
-    result.push(item * end);
+    result.push(arr[numRandom]);
+    arr.splice(numRandom, 1);
   }
 
-  for (const item of endArr) {
-    result.push(item * init);
-  }
-  return result;
-};
-const possibleAnswersSum = (init:number, end:number):number[] => {
-  const result:number[] = [];
-
-  const sum = init + end;
-  result.push(sum, sum+1, sum+2, sum-1, sum-2);
   return result;
 };
 
-const possibleAnswersRest = (init:number, end:number):number[] => {
-  const result:number[] = [];
 
-  const rest = init - end;
-  result.push(rest, rest+1, rest+2, rest-1, rest-2);
+const answersSumOrRest = (init:number, end:number, op:string):number[] => {
+  const result:number[] = [];
+  let res:number = 0;
+
+  if (op === 'sum') res = init + end;
+  if (op === 'rest') res = init - end;
+
+  const randomInit = res - 2; // range of number generate between randomEnd
+  const randomEnd = res + 2;
+
+  let i:number = 0;
+
+  do {
+    const numRandom = random.randomIntFromInterval(randomInit, randomEnd);
+
+    i = result.length;
+
+    if (!result.includes(numRandom)) result.push(numRandom);
+  } while (i < 5);
 
   return result;
 };
