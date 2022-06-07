@@ -14,6 +14,7 @@ interface ContextProps extends PlayerState {
   setResult: (result: number) => void
   increaseProgress: (progress: IProgress) => void
   successOrError: (state: ISuccessOrError) => void
+  clearAll: () => void
 }
 
 export const PlayerContext = createContext({} as ContextProps);

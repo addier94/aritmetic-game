@@ -49,6 +49,9 @@ export const PlayerProvider:FC<{children: React.ReactNode}> = ({children}) => {
   const successOrError = (state: ISuccessOrError) => {
     dispatch({type: '[Player] - Set Success Or Error', payload: state});
   };
+  const clearAll = () => {
+    dispatch({type: '[Player] - Clear all State', payload: PLAYER_INITIAL_STATE});
+  };
 
   return (
     <PlayerContext.Provider value={{
@@ -59,6 +62,7 @@ export const PlayerProvider:FC<{children: React.ReactNode}> = ({children}) => {
       setResult,
       increaseProgress,
       successOrError,
+      clearAll,
     }}>
       {children}
     </PlayerContext.Provider>

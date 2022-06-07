@@ -7,6 +7,7 @@ type PlayerActionType =
   | {type: '[Player] - Set Result', payload:number}
   | {type: '[Player] - Icrease Progress', payload:IProgress}
   | {type: '[Player] - Set Success Or Error', payload: ISuccessOrError}
+  | {type: '[Player] - Clear all State', payload: PlayerState}
 
 // always return state, can't be mutate something like( state.modal = true)
 export const playerReducer = (state: PlayerState, action: PlayerActionType):PlayerState => {
@@ -33,6 +34,10 @@ export const playerReducer = (state: PlayerState, action: PlayerActionType):Play
       return {
         ...state,
         isSuccessOrError: action.payload,
+      };
+    case '[Player] - Clear all State':
+      return {
+        ...action.payload,
       };
 
     default:

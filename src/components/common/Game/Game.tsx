@@ -45,12 +45,17 @@ export default Game;
 
 const ProgressBar = () => {
   const navigate = useNavigate();
-  const {progress} = useContext(PlayerContext);
+  const {progress, clearAll} = useContext(PlayerContext);
   const {endProg, prog} = progress;
+
+  const goBackAndReset = () => {
+    clearAll();
+    navigate('/');
+  };
   return (
     <div className={s.progresBar}>
       <VscChromeClose
-        onClick={() => navigate('/')}
+        onClick={() => goBackAndReset()}
         className='w-8 h-8 cursor-pointer duration-300 hover:text-gray' />
       <div>
         <section style={{width: `${prog}0%`}}></section>
@@ -201,6 +206,16 @@ const FooterBtn:FC<{op:string}> = ({op}) => {
   );
 };
 
+const setGlobalProgress = (op:string) => {
+  // const prgoress = {
+  //   sum: 0,
+  //   rest: 0,
+  //   multi: 0,
+  //   level: 0,
+  //   name: '',
+  // };
+};
+
 const answerItWas = (initNum:number, secondNum:number, op:string):number => {
   let itWas:number = 0;
   if (op === 'sum') itWas = initNum + secondNum;
@@ -229,7 +244,6 @@ const calculateAnswer = (result:number, initNum:number, secondNum:number, prog:n
 
 
 const generatePossibleSolutions = (init:number, end:number, op:string):number[] => {
-  console.log(init, end, op);
   if (op === 'multi') return possibleAnswersMulti(init, end);
   if (op === 'sum') return answersSumOrRest(init, end, op);
   return answersSumOrRest(init, end, op);
