@@ -1,49 +1,58 @@
-import React, {FC, ReactNode, useEffect, useState} from 'react';
+import React, {Dispatch, FC, ReactNode, SetStateAction, useEffect, useState} from 'react';
 import s from './HomeView.module.css';
 import {FaCoins, FaBitcoin} from 'react-icons/fa';
 import {GiWoodBeam} from 'react-icons/gi';
 import {useNavigate} from 'react-router-dom';
 
-const HomeView:React.FC = () => {
-  const [user, setUser] = useState<IUserData | null>();
+const HomeView = () => {
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState<IUserData>({...stateUserData});
+  const {isActive, level, multi, name, rest, sum} = userData;
 
   useEffect(() => {
-    setUser(isLogin());
+    setUserData(isLogin());
   }, []);
 
   const outUser = (userName:string) => {
     logout(userName);
-    setUser(null);
+    setUserData({...stateUserData});
+  };
+
+  const canGo = (goTo:string) => {
+    if (!isActive) return;
+    navigate(goTo);
   };
   return (
     <div className={s.homeView}>
       <header className='flex justify-between items-center py-1'>
         <section
-        >344
+        >{level}
         </section>
         <section className='grid grid-cols-2 gap-1'>
           <div className='flex items-center'>
             <FaCoins className='text-yellow-400 w-5 h-5 -mr-1 relative z-10 '/>
-            <ProgressBars progress={{count: 2934, op: 'x'}} />
+            <ProgressBars progress={{count: multi, op: 'x'}} />
           </div>
           <div className='flex items-center'>
             <GiWoodBeam className='text-amber-900 w-5 h-5 -mr-1 relative z-10' />
-            <ProgressBars progress={{count: 293, op: '-'}} />
+            <ProgressBars progress={{count: rest, op: '-'}} />
           </div>
           <div className='flex items-center col-start-2'>
             <FaBitcoin className='text-red-600 w-5 h-5 -mr-1 relative z-10 '/>
-            <ProgressBars progress={{count: 4589, op: '+'}} />
+            <ProgressBars progress={{count: sum, op: '+'}} />
           </div>
         </section>
       </header>
 
-      {user ? <Logout user={user} cb={outUser} /> : <FormLogin /> }
-
+      {isActive ? <Logout userName={name} cb={outUser} /> : <FormLogin setUserData={setUserData} /> }
 
       <section className='mt-8'>
-        <NavBtn goTo='/player/sum'>+</NavBtn>
-        <NavBtn goTo='/player/rest'>-</NavBtn>
-        <NavBtn goTo='/player/multi'>x</NavBtn>
+        {!isActive &&
+      <p className='text-sm mx-2 text-red-700'>Por favor añade tu nombre para continuar</p>
+        }
+        <NavBtn goTo='/player/sum' canGo={canGo}>+</NavBtn>
+        <NavBtn goTo='/player/rest' canGo={canGo}>-</NavBtn>
+        <NavBtn goTo='/player/multi' canGo={canGo}>x</NavBtn>
       </section>
     </div>
   );
@@ -70,54 +79,58 @@ const ProgressBars:FC<ProgressBarsProps> = ({progress}) => {
 interface NavBtnProps {
   children: ReactNode
   goTo: string
+  canGo: (goTo: string) => void
 }
-const NavBtn:FC<NavBtnProps> = ({children, goTo}) => {
-  const navigate = useNavigate();
+const NavBtn:FC<NavBtnProps> = ({children, goTo, canGo}) => {
   return (
     <button
-      onClick={() => navigate(goTo)}
+      onClick={() => canGo(goTo)}
       className={`bg-primary2 mt-2 col-span-4 border-primary3 px-4 text-white border-b-[6px] w-full hover:opacity-90 duration-150 rounded-xl font-medium py-1 text-5xl pb-2`}>
       {children}
     </button>
   );
 };
 
-const FormLogin = () => {
+const FormLogin:FC<{setUserData: Dispatch<SetStateAction<IUserData>>}> = ({setUserData}) => {
   const [userName, setUserName] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState('');
 
+
   const handleSubmit = (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const isValidName = isVAlidUserName(userName);
+    const isValidName = isValidUserName(userName);
 
-    if (!isValidName) {
-      setErrorMsg('Por Favor su nombre debe ser mayor a 3 caracter');
+    if (isValidName.length > 0) {
+      setErrorMsg(isValidName[0]);
     } else {
-      setUser(isValidName);
+      setUserData(setUser(userName.trim().toUpperCase()));
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className='mt-8 grid grid-cols-12 gap-x-1'>
-      <input
-        type="text"
-        className='border col-span-8 rounded-xl border-primary py-1 px-3'
-        placeholder='Name'
-        onChange={(event) => setUserName(event.target.value)}
-      />
-      <button
-        className={`bg-primary2 col-span-4 border-primary3 px-4 text-white border-b-[6px] w-full hover:opacity-90 duration-150 rounded-xl font-medium py-2`}
-      >ENTRAR</button>
-    </form>
+    <>
+      <form onSubmit={handleSubmit} className='mt-16 grid grid-cols-12 gap-x-1'>
+        <input
+          type="text"
+          className='border col-span-8 rounded-xl border-primary py-1 px-3'
+          placeholder='Name'
+          onChange={(event) => setUserName(event.target.value)}
+        />
+        <button
+          className={`bg-primary2 col-span-4 border-primary3 px-4 text-white border-b-[6px] w-full hover:opacity-90 duration-150 rounded-xl font-medium py-2`}
+        >ENTRAR</button>
+      </form>
+      <p className='text-sm text-red-700 '>{errorMsg}</p>
+    </>
   );
 };
 
-const Logout:FC<{user: IUserData, cb: (name:string) => void}> = ({user, cb}) => {
+const Logout:FC<{userName: string, cb: (name:string) => void}> = ({userName, cb}) => {
   return (
     <article className='flex items-center justify-between mt-8'>
-      <span className='text-gray2 uppercase'>{user.name}</span>
+      <span className='text-gray2 uppercase'>{userName}</span>
       <button
-        onClick={() => cb(user.name)}
+        onClick={() => cb(userName)}
         className={`bg-danger2 text-danger border-danger3 w-40 ml-2 px-4 border-b-[6px] hover:opacity-90 duration-150 rounded-xl font-medium py-2`}
       >SALIR</button>
     </article>
@@ -134,7 +147,7 @@ interface IUserData {
 }
 
 
-const stateUserData = {
+const stateUserData:IUserData = {
   isActive: false,
   sum: 0,
   rest: 0,
@@ -145,31 +158,31 @@ const stateUserData = {
 
 
 const logout = (userName:string) => {
-  let userData:any = localStorage.getItem('user');
-  userData = userData ? JSON.parse(userData) : null;
+  let allUsers:any = localStorage.getItem('user');
+  allUsers = allUsers ? JSON.parse(allUsers) : null;
 
-  if (!userData) return null;
+  if (!allUsers) return null;
 
-  const user = userData.find((item: IUserData) => item.name = userName);
-
-  if (!user) return null;
-
-  const newUserData:IUserData[] = userData.filter((item:IUserData) => item.name !== userName);
-
-
-  newUserData.push({...user, isActive: false});
-  localStorage.setItem('user', JSON.stringify(newUserData));
+  const changePropertyOfCurrentUser = allUsers.map((item:IUserData) => {
+    if (item.name === userName) {
+      return {...item, isActive: false};
+    }
+    return item;
+  });
+  localStorage.setItem('user', JSON.stringify(changePropertyOfCurrentUser));
 };
 
-const isLogin = ():IUserData | null => {
-  let userData:any = localStorage.getItem('user');
-  userData = userData ? JSON.parse(userData) : null;
+const isLogin = ():IUserData => {
+  let allUsers:any = localStorage.getItem('user');
+  allUsers = allUsers ? JSON.parse(allUsers) : undefined;
 
-  if (!userData) return userData;
+  if (!allUsers) return allUsers = {...stateUserData};
 
-  userData = userData.find((item:IUserData) => item.isActive === true);
+  allUsers = allUsers.find((item:IUserData) => item.isActive === true);
 
-  return userData as IUserData;
+  if (!allUsers) return allUsers = {...stateUserData};
+
+  return allUsers as IUserData;
 };
 
 const setUser = (userName: string):IUserData => {
@@ -181,27 +194,36 @@ const setUser = (userName: string):IUserData => {
 
   if (allUsers) {
     // find if user exist
-    userData = allUsers;
     let foundUser = allUsers.find((item:IUserData) => item.name === userName);
     foundUser = foundUser ? {...foundUser, isActive: true} : undefined;
 
-    if (!foundUser) {
-      // create new user
+    if (foundUser) {
+      userData = allUsers.map((item:IUserData) => {
+        if (item.name === userName) {
+          return {...item, isActive: true};
+        }
+        return item;
+      });
+    } else {
       foundUser = {...stateUserData, name: userName, isActive: true};
+      userData = allUsers;
       userData.push(foundUser);
-      localStorage.setItem('user', JSON.stringify(userData));
     }
+  } else {
+    userData = [{...stateUserData, name: userName, isActive: true}];
   }
 
-  if (!localStorage.getItem('user')) {
-    userData = localStorage.setItem('user', JSON.stringify([{...stateUserData, name: userName, isActive: true}]));
-  }
-
-  return userData as IUserData;
+  localStorage.setItem('user', JSON.stringify(userData));
+  return isLogin();
 };
 
-const isVAlidUserName = (name:string):string | undefined => {
+const isValidUserName = (name:string):string[] => {
+  const errosMsg:string[] = [];
+
   const userName = name.trim().toUpperCase();
 
-  return userName.length < 3 ? undefined : userName;
+  if (userName.length < 3) {
+    errosMsg.push('Por favor nombre debe ser mayor 3 caracter');
+  }
+  return errosMsg;
 };
