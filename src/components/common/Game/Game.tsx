@@ -4,12 +4,12 @@ import {MdClose} from 'react-icons/md';
 import {VscChromeClose} from 'react-icons/vsc';
 import s from './Game.module.css';
 import {PlayerContext} from '../../../context/Player/PlayerContext';
-import {random} from '../../../utils';
-import {IMultiplication} from '../../../context/Player/PlayerProvider';
 import {useNavigate, useParams} from 'react-router-dom';
 import {TiEquals} from 'react-icons/ti';
 import {TiPlus} from 'react-icons/ti';
 import {TiMinus} from 'react-icons/ti';
+import {IUserData} from '../../../utils/interfaces';
+import {answerItWas, calculateAnswer, generatePossibleSolutions, incrementUserLevel, newChallenge} from '../../../utils/player';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -124,9 +124,16 @@ interface CheckStatusProps {
 }
 
 const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
-  const {setNewChallenge, successOrError, setResult} = useContext(PlayerContext);
+  const navigate = useNavigate();
+  const {setNewChallenge, successOrError, setResult, progress: {prog}, clearAll} = useContext(PlayerContext);
+
 
   const nextChallenge = () => {
+    if (prog === 10) {
+      clearAll();
+      incrementUserLevel(msg.op);
+      navigate('/');
+    }
     successOrError({resultStatus: 'empty', result: '', title: ''});
     setNewChallenge(newChallenge(msg.op));
     setResult(0);
@@ -206,118 +213,4 @@ const FooterBtn:FC<{op:string}> = ({op}) => {
   );
 };
 
-const setGlobalProgress = (op:string) => {
-  // const prgoress = {
-  //   sum: 0,
-  //   rest: 0,
-  //   multi: 0,
-  //   level: 0,
-  //   name: '',
-  // };
-};
 
-const answerItWas = (initNum:number, secondNum:number, op:string):number => {
-  let itWas:number = 0;
-  if (op === 'sum') itWas = initNum + secondNum;
-  if (op === 'rest') itWas = initNum - secondNum;
-  if (op === 'multi') itWas = initNum * secondNum;
-  return itWas;
-};
-
-const calculateAnswer = (result:number, initNum:number, secondNum:number, prog:number, op:string):Promise<number> => new Promise((resolve, reject) => {
-  let progress:number = 0;
-
-  if ( (initNum * secondNum) === result && op === 'multi') {
-    prog < 10 ? progress = prog + 1 : progress = prog;
-    resolve(progress);
-  }
-  if ( (initNum - secondNum) === result && op === 'rest') {
-    prog < 10 ? progress = prog + 1 : progress = prog;
-    resolve(progress);
-  }
-  if ((initNum + secondNum) === result && op === 'sum') {
-    prog < 10 ? progress = prog + 1 : progress = prog;
-    resolve(progress);
-  }
-  reject(progress);
-});
-
-
-const generatePossibleSolutions = (init:number, end:number, op:string):number[] => {
-  if (op === 'multi') return possibleAnswersMulti(init, end);
-  if (op === 'sum') return answersSumOrRest(init, end, op);
-  return answersSumOrRest(init, end, op);
-};
-
-const possibleAnswersMulti = (init:number, end:number):number[] => {
-  const arr:number[] = [init * end, (init - 1) * end, (init + 1) * end, (end-1) * init, (end+1) * init];
-
-  const result:number[] = [];
-
-  for (let i = 0; i<5; i++) {
-    const numRandom = random.randomIntFromInterval(0, (arr.length - 1));
-
-    result.push(arr[numRandom]);
-    arr.splice(numRandom, 1);
-  }
-
-  return result;
-};
-
-
-const answersSumOrRest = (init:number, end:number, op:string):number[] => {
-  const result:number[] = [];
-  let res:number = 0;
-
-  if (op === 'sum') res = init + end;
-  if (op === 'rest') res = init - end;
-
-  const randomInit = res - 2; // range of number generate between randomEnd
-  const randomEnd = res + 2;
-
-  let i:number = 0;
-
-  do {
-    const numRandom = random.randomIntFromInterval(randomInit, randomEnd);
-
-    i = result.length;
-
-    if (!result.includes(numRandom)) result.push(numRandom);
-  } while (i < 5);
-
-  return result;
-};
-
-
-const newChallenge = (op:string):IMultiplication => {
-  if (op === 'multi') return generateNewMulti();
-  if (op === 'sum') return generateNewSum();
-  return generateNewRest();
-};
-
-const generateNewMulti = () => {
-  return {
-    initNum: random.randomIntFromInterval(2, 9),
-    secondNum: random.randomIntFromInterval(2, 10),
-    result: 0,
-  };
-};
-
-const generateNewRest = () => {
-  const initNum = random.randomIntFromInterval(3, 19);
-  let secondNum = random.randomIntFromInterval(3, 19);
-
-  do {
-    secondNum -=2;
-  }
-  while (secondNum >= initNum);
-
-  return {initNum, secondNum, result: 0};
-};
-const generateNewSum = () => {
-  return {
-    initNum: random.randomIntFromInterval(2, 20),
-    secondNum: random.randomIntFromInterval(2, 20),
-    result: 0,
-  };
-};
