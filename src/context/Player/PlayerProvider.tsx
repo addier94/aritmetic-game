@@ -1,4 +1,4 @@
-import React, {FC, useReducer} from 'react';
+import React, {FC, useCallback, useMemo, useReducer} from 'react';
 
 import {PlayerContext, playerReducer} from '.';
 
@@ -42,9 +42,9 @@ export const PlayerProvider:FC<{children: React.ReactNode}> = ({children}) => {
     dispatch({type: '[Player] - Set Result', payload: result});
   };
 
-  const increaseProgress = (progress: IProgress) => {
-    dispatch({type: '[Player] - Icrease Progress', payload: progress});
-  };
+  const increaseProgress = useCallback(
+      (progress: IProgress) => dispatch({type: '[Player] - Icrease Progress', payload: progress}), [dispatch, state.progress],
+  );
 
   const successOrError = (state: ISuccessOrError) => {
     dispatch({type: '[Player] - Set Success Or Error', payload: state});
@@ -53,17 +53,21 @@ export const PlayerProvider:FC<{children: React.ReactNode}> = ({children}) => {
     dispatch({type: '[Player] - Clear all State', payload: PLAYER_INITIAL_STATE});
   };
 
-  return (
-    <PlayerContext.Provider value={{
-      ...state,
+  const value = useMemo(
+      () => ({
+        ...state,
+        // methods
+        setNewChallenge,
+        setResult,
+        increaseProgress,
+        successOrError,
+        clearAll,
+      }),
+      [state],
+  );
 
-      // methods
-      setNewChallenge,
-      setResult,
-      increaseProgress,
-      successOrError,
-      clearAll,
-    }}>
+  return (
+    <PlayerContext.Provider value={value}>
       {children}
     </PlayerContext.Provider>
   );
