@@ -8,8 +8,16 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {TiEquals} from 'react-icons/ti';
 import {TiPlus} from 'react-icons/ti';
 import {TiMinus} from 'react-icons/ti';
-import {IUserData} from '../../../utils/interfaces';
 import {answerItWas, calculateAnswer, generatePossibleSolutions, incrementUserLevel, newChallenge} from '../../../utils/player';
+import useSound from 'use-sound';
+// @ts-ignore
+import btnsound from '../../../btnsound.wav';
+// @ts-ignore
+import successsound from '../../../success.wav';
+// @ts-ignore
+import errorsound from '../../../error.wav';
+// @ts-ignore
+import successful from '../../../successful.mp3';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -66,12 +74,14 @@ const ProgressBar = () => {
 };
 
 const GameBody:FC<{op:string}> = ({op}) => {
+  const [playSoundOnClick] = useSound(btnsound);
   const [solutions, setSolutions] = useState<number[]>();
   const {multiplication, result, setResult, setNewChallenge} = useContext(PlayerContext);
   const {initNum, secondNum} = multiplication;
 
   const setNum = (num:number) => {
     setResult(num);
+    playSoundOnClick();
   };
 
   useEffect(() => {
@@ -124,6 +134,7 @@ interface CheckStatusProps {
 }
 
 const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
+  const [playSoundSuccessful] = useSound(successful);
   const navigate = useNavigate();
   const {setNewChallenge, successOrError, setResult, progress: {prog}, clearAll} = useContext(PlayerContext);
 
@@ -132,6 +143,7 @@ const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
     if (prog === 10) {
       clearAll();
       incrementUserLevel(msg.op);
+      playSoundSuccessful();
       navigate('/');
     }
     successOrError({resultStatus: 'empty', result: '', title: ''});
@@ -172,6 +184,9 @@ const CheckStatus:React.FC<CheckStatusProps> = ({msg}) => {
 };
 
 const FooterBtn:FC<{op:string}> = ({op}) => {
+  const [playSoundSuccess] = useSound(successsound);
+  const [playSoundError] = useSound(errorsound);
+
   const {setNewChallenge, multiplication, result, progress, successOrError, increaseProgress, setResult} = useContext(PlayerContext);
 
   const {initNum, secondNum} = multiplication;
@@ -189,8 +204,10 @@ const FooterBtn:FC<{op:string}> = ({op}) => {
         .then((item) => {
           increaseProgress({prog: item, endProg: 10});
           successOrError({title: 'Bien hecho', result: result.toString() + ' es correcto', resultStatus: 'success'});
+          playSoundSuccess();
         })
         .catch((item) => {
+          playSoundError();
           successOrError(
               {title: 'Error',
                 result: `El resultado era: ${answerItWas(initNum, secondNum, op).toString()} `,
